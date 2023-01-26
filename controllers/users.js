@@ -31,20 +31,21 @@ const registerUser = asyncHandler( async (req, res) => {
         name,
         email,
         password,
-        avatar
+        avatar,
+        type: 'emailWithPassword'
     })
 
     //   Generate Token
     const token = generateToken(user._id)
 
     //send http only cookie
-    // res.cookie("token", token, {
-    //     path: "/",
-    //     httpOnly: true,
-    //     expires: new Date(Date.now() + 1000 * 86400), // 1 day
-    //     sameSite: "none",
-    //     secure: true,
-    //   })
+    res.cookie("token", token, {
+        path: "/",
+        httpOnly: true,
+        expires: new Date(Date.now() + 1000 * 86400), // 1 day
+        sameSite: "none",
+        secure: true,
+      })
 
     if (user) {
         const { _id, name, email, avatar } = user
@@ -87,13 +88,13 @@ const loginUser = asyncHandler(async (req, res) => {
     const token = generateToken(user._id)
   
     // Send HTTP-only cookie
-    // res.cookie("token", token, {
-    //   path: "/",
-    //   httpOnly: true,
-    //   expires: new Date(Date.now() + 1000 * 86400), // 1 day
-    //   sameSite: "none",
-    //   secure: true,
-    // })
+    res.cookie("token", token, {
+      path: "/",
+      httpOnly: true,
+      expires: new Date(Date.now() + 1000 * 86400), // 1 day
+      sameSite: "none",
+      secure: true,
+    })
   
     if (user && passwordIsCorrect) {
       const { _id, name, email, avatar } = user
@@ -109,6 +110,63 @@ const loginUser = asyncHandler(async (req, res) => {
       throw new Error("Invalid email or password")
     }
 })
+
+// Login With Google
+
+const loginUserWithGoogle = asyncHandler(async (req, res) => {
+  const { email, name, avatar } = req.body
+
+  // Validate Request
+  if (!email || !name || !avatar) {
+    res.status(400)
+    throw new Error("Error")
+  }
+
+  // Check if user exists
+  let user = await User.findOne({ email })
+
+  if(!user){
+    user = await User.create({
+        name,
+        email,
+        password: '',
+        avatar,
+        type: 'google'
+    })
+  }
+  else {
+    if(user.type === 'emailWithPassword'){
+      res.status(400)
+      throw new Error("Email was exits")
+    }
+  }
+  //   Generate Token
+  const token = generateToken(user._id)
+
+  // Send HTTP-only cookie
+  res.cookie("token", token, {
+    path: "/",
+    httpOnly: true,
+    expires: new Date(Date.now() + 1000 * 86400), // 1 day
+    sameSite: "none",
+    secure: true,
+  })
+
+  if (user) {
+    const { _id, name, email, avatar } = user
+    res.status(200).json({
+      _id,
+      name,
+      email,
+      avatar,
+      token,
+    })
+  } else {
+    res.status(400)
+    throw new Error("Error")
+  }
+})
+
   
 // Logout User
 const logout = asyncHandler(async (req, res) => {
@@ -215,6 +273,7 @@ const changePassword = asyncHandler(async (req, res) => {
 module.exports = {
     registerUser,
     loginUser,
+    loginUserWithGoogle,
     logout,
     getUser,
     loginStatus,

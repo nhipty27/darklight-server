@@ -19,14 +19,13 @@ const userSchema = mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, "Please add a password"],
-      minLength: [6, "Password must be up to 6 characters"],
     },
     avatar: {
       type: String,
       required: [true, "Please add a photo"],
       default: "https://firebasestorage.googleapis.com/v0/b/darklight-9102.appspot.com/o/69e6ca1f9a304e8512236e61955b130e.jpg?alt=media&token=46a298ea-a1d3-4631-a0ba-f569c4bd18c7",
-    }
+    },
+    type: String
   },
   {
     timestamps: true,
