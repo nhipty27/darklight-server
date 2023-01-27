@@ -8,6 +8,7 @@ const morgan = require('morgan')
 const cookieParser = require("cookie-parser")
 
 const usersRoutes = require("./routes/users")
+const personalRoutes = require("./routes/personal")
 
 /* CONFIGURATION */
 dotenv.config()
@@ -31,6 +32,7 @@ app.use(cors(corsOptions))
 
 /* ROUTES */
 app.use("/user", usersRoutes)
+app.use("/personal", personalRoutes)
 
 /* MONGOOSE SETUP */
 const PORT = process.env.PORT || 9000
