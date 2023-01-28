@@ -1,14 +1,13 @@
 const asyncHandler = require('express-async-handler')
 const Bookmark = require("../models/Bookmark")
 
-
 // Get bookmark
 const getBookmark = asyncHandler(async (req, res) => {
     const {id, type} = req.query
     let bookmarks = []
     if(type === 'all')
-        bookmarks = await Bookmark.find({idUser: id})
-    else bookmarks = await Bookmark.find({idUser: id, type: type})
+        bookmarks = await Bookmark.find({idUser: id}).sort({'updatedAt':-1})
+    else bookmarks = await Bookmark.find({idUser: id, type: type}).sort({'updatedAt':-1})
     
     if (bookmarks) {
       res.status(200).json(bookmarks)
@@ -74,7 +73,6 @@ const deleteBookmark = asyncHandler(async (req, res) =>
 const getSimpleBookmark = asyncHandler(async (req, res) => 
 {
     const {idUser, idMovie, type} = req.body
-    console.log(req.body);
     
     try{
         const bookmark = await Bookmark.findOne({idUser, idMovie, type: type})

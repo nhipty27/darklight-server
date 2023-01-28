@@ -1,13 +1,19 @@
 var express = require('express')
 var router = express.Router()
-const personalController = require('../controllers/personal')
-
+const bookmarkController = require('../controllers/bookmark')
+const historyController = require('../controllers/history')
 
 //bookmark
-router.get('/bookmark', personalController.getBookmark)
-router.post('/findBookmark', personalController.getSimpleBookmark)
-router.post('/bookmark', personalController.createBookmark)
-router.delete('/bookmark', personalController.deleteBookmark)
+router.get('/bookmark', bookmarkController.getBookmark)
+router.post('/findBookmark', bookmarkController.getSimpleBookmark)
+router.post('/bookmark', bookmarkController.createBookmark)
+router.delete('/bookmark', bookmarkController.deleteBookmark)
 
+
+//history
+router.get('/history', historyController.getHistory)
+router.post('/history', historyController.createHistory)
+router.delete('/history', historyController.deleteHistory)
+router.delete('/historyAll', historyController.deleteAllHistory)
 
 module.exports = router
