@@ -4,13 +4,15 @@ const commentSchema = mongoose.Schema(
   {
     idUser: {
       type: String,
-      required: [true, "Please add a name"],
     },
     idMovie: {
       type: String,
     },
     content: String,
-    time: dateTime,
+    likers: {
+      type: [String],
+      default: []
+    },
     reply: String
   },
   {

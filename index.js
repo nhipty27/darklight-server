@@ -9,6 +9,8 @@ const cookieParser = require("cookie-parser")
 
 const usersRoutes = require("./routes/users")
 const personalRoutes = require("./routes/personal")
+const commentRoutes = require("./routes/comments")
+const sseRoutes = require("./routes/sse")
 
 /* CONFIGURATION */
 dotenv.config()
@@ -31,8 +33,10 @@ const corsOptions ={
 app.use(cors(corsOptions))
 
 /* ROUTES */
+app.use(sseRoutes)
 app.use("/user", usersRoutes)
 app.use("/personal", personalRoutes)
+app.use("/comment", commentRoutes)
 
 /* MONGOOSE SETUP */
 const PORT = process.env.PORT || 9000

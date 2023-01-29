@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 const generateToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1d" })
 
+
 // Register User
 const registerUser = asyncHandler( async (req, res) => {
     const { name, email, password, avatar } = req.body
@@ -182,18 +183,14 @@ const logout = asyncHandler(async (req, res) => {
 
 // Get User Data
 const getUser = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.user._id)
+    const {id} = req.query
+    console.log(req.query);
+    
+    const user = await User.findById(id)
   
     if (user) {
-      const { _id, name, email, photo, phone, bio } = user
-      res.status(200).json({
-        _id,
-        name,
-        email,
-        photo,
-        phone,
-        bio,
-      })
+      const { _id, name, email, avatar } = user
+      res.status(200).json({_id, name, email, avatar })
     } else {
       res.status(400)
       throw new Error("User Not Found")
