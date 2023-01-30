@@ -11,4 +11,6 @@ router.post("/comments", commentController.createComment)
 
 router.patch("/comments/:id", commentController.updateReaction)
 
+router.post('/delComment', commentController.deleteComment)
+
 module.exports = router

@@ -6,15 +6,15 @@ const sse = require("../sse")
 // Get Comments
 const getComments = asyncHandler(async (req, res) => {
     const {id} = req.query
-    
     const rs = await commentService.getCommentService(id)
     res.status(rs.statusCode).json(rs)
 })
 
 const createComment = asyncHandler (async (req, res) => {
   const body = req.body
-  const result = await commentService.createCommentService(body)
+  const result = await commentService.createCommentService(body.data)
   res.status(result.statusCode).json(result)
+  
   if (!result.error) {
     //   emit post event
     sse.send(result.data[0], "comment")
@@ -33,9 +33,14 @@ const updateReaction = asyncHandler (async (req, res) => {
   }
 })
 
+const deleteComment = async (req, res) => {
+  const rs = await Comments.deleteMany()
+    res.status(rs.statusCode).json(rs)
+}
 
 module.exports = {
     getComments,
     createComment,
-    updateReaction
+    updateReaction,
+    deleteComment
 }

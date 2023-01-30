@@ -33,7 +33,7 @@ const corsOptions ={
 app.use(cors(corsOptions))
 
 /* ROUTES */
-app.use(sseRoutes)
+app.use('/',sseRoutes)
 app.use("/user", usersRoutes)
 app.use("/personal", personalRoutes)
 app.use("/comment", commentRoutes)

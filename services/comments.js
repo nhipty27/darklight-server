@@ -2,11 +2,12 @@ const Comments = require("../models/Comments");
 
 const getCommentService = async (idMovie) => {
   try {
-    const comments = await Comments.find({idMovie: idMovie});
+    const comments = await Comments.find({idMovie: idMovie}).sort({updatedAt:-1});
+    
     const _length = comments.length;
     const message = _length === 0 ? "Not found" : "success";
     const error = _length === 0 ? true : false;
-    const statusCode = _length === 0 ? 404 : 200;
+    const statusCode = !comments ? 404 : 200;
     return { data: comments, error, message, statusCode };
   } 
   catch (error) {
