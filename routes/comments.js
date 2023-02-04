@@ -6,10 +6,15 @@ const commentController = require('../controllers/comments')
 
 router.get('/comments', commentController.getComments)
 
+router.get('/comment', commentController.getComment)
+
+router.get('/reply', commentController.getCommentReply)
 
 router.post("/comments", commentController.createComment)
 
-router.patch("/comments/:id", commentController.updateReaction)
+router.post("/like-comments", commentController.updateReaction)
+
+router.post("/unlike-comments", commentController.deleteReaction)
 
 router.post('/delComment', commentController.deleteComment)
 

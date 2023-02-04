@@ -14,6 +14,7 @@ const commentSchema = mongoose.Schema(
       default: []
     },
     reply: {
+      // type: mongoose.Schema.Types.ObjectId,
       type: String,
       default: ''
     }

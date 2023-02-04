@@ -3,6 +3,6 @@ const sse = require("../sse")
 
 const router = express.Router()
 
-router.get("/stream", sse.init)
+router.get("/", sse.init)
 
 module.exports = router

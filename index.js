@@ -6,11 +6,11 @@ const dotenv = require('dotenv')
 const helmet = require('helmet')
 const morgan = require('morgan')
 const cookieParser = require("cookie-parser")
+const socket = require("socket.io")
 
 const usersRoutes = require("./routes/users")
 const personalRoutes = require("./routes/personal")
 const commentRoutes = require("./routes/comments")
-const sseRoutes = require("./routes/sse")
 
 /* CONFIGURATION */
 dotenv.config()
@@ -33,7 +33,6 @@ const corsOptions ={
 app.use(cors(corsOptions))
 
 /* ROUTES */
-app.use('/',sseRoutes)
 app.use("/user", usersRoutes)
 app.use("/personal", personalRoutes)
 app.use("/comment", commentRoutes)
@@ -46,6 +45,43 @@ mongoose
     useUnifiedTopology: true,
   })
   .then(() => {
-    app.listen(PORT, () => console.log(`Server Port: ${PORT}`))
+    console.log(`DB Connection Successfully`)
+    const server = app.listen(PORT, () => {console.log(`Server Port: ${PORT}`)})
+    const io = socket(server, {
+      cors: {
+        origin: process.env.BASE_URL,
+        credentials: true,
+      },
+    })
+
+    global.onlineUsers = new Map()
+    io.on("connection", (socket) => {
+      global.commentSocket = socket
+      socket.on("add-user", (userId) => {
+        global.onlineUsers.set(userId, socket.id)
+      })
+
+      socket.on("send-comment", (data) => {
+        for (const [key, value] of onlineUsers) {
+          if(key !== data.idUser)
+            socket.to(value).emit("comment-receive", data)
+        }
+      })
+
+      socket.on("like-comment", (data) => {
+        for (const [key, value] of onlineUsers) {
+          if(key !== data.idUser)
+            socket.to(value).emit("like-receive", data)
+        }
+      })
+
+      socket.on("unlike-comment", (data) => {
+        for (const [key, value] of onlineUsers) {
+          if(key !== data.idUser)
+            socket.to(value).emit("unlike-receive", data)
+        }
+      })
+    })
   })
   .catch((error) => console.log(`${error} did not connect`))
+
