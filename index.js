@@ -7,7 +7,7 @@ const helmet = require('helmet')
 const morgan = require('morgan')
 const cookieParser = require("cookie-parser")
 const socket = require("socket.io")
-
+const verifyJWT = require('./middleware/verifyJWT')
 const usersRoutes = require("./routes/users")
 const personalRoutes = require("./routes/personal")
 const commentRoutes = require("./routes/comments")
@@ -34,6 +34,8 @@ app.use(cors(corsOptions))
 
 /* ROUTES */
 app.use("/user", usersRoutes)
+
+app.use(verifyJWT)
 app.use("/personal", personalRoutes)
 app.use("/comment", commentRoutes)
 

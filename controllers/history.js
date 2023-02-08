@@ -28,13 +28,13 @@ const createHistory = asyncHandler(async (req, res) =>
         res.status(400);
         throw new Error("Please fill in all fields");
     }
+
     const timeWatch = new Date().toLocaleString()
     let his = null
     if(season === '0')
-        his = await History.findOne({idUser, idMovie, type})
-    else his = await History.findOne({idUser, idMovie, type, season, ep})
+        his = await History.findOneAndDelete({idUser, idMovie, type})
+    else his = await History.findOneAndDelete({idUser, idMovie, type, season, ep})
     
-    if(his) his.remove()
     try{
         const history = await History.create(
             {
@@ -47,6 +47,8 @@ const createHistory = asyncHandler(async (req, res) =>
                 ep,
                 name,
             })
+            console.log(history);
+            
             res.status(201).json(history)
     }
     catch(err) {
@@ -103,10 +105,16 @@ const deleteAllHistory = asyncHandler(async (req, res) =>
     }
 })
 
+const deleteAll = async (req, res) => {
+    await History.deleteMany({})
+    res.status(200).json({ message: "All History deleted." })
+}
+
 
 module.exports = {
     getHistory,
     createHistory,
     deleteHistory,
-    deleteAllHistory
+    deleteAllHistory,
+    deleteAll
 }

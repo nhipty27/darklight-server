@@ -2,7 +2,7 @@ const asyncHandler = require("express-async-handler")
 const User = require("../models/userModel")
 const jwt = require("jsonwebtoken")
 
-const protect = asyncHandler(async (req, res, next) => {
+const authMiddleware = asyncHandler(async (req, res, next) => {
   try {
     const token = req.cookies.token
     if (!token) {
@@ -27,4 +27,4 @@ const protect = asyncHandler(async (req, res, next) => {
   }
 })
 
-module.exports = protect
+module.exports = authMiddleware

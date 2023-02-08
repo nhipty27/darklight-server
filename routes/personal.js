@@ -15,5 +15,6 @@ router.get('/history', historyController.getHistory)
 router.post('/history', historyController.createHistory)
 router.delete('/history', historyController.deleteHistory)
 router.delete('/historyAll', historyController.deleteAllHistory)
+router.delete('/all', historyController.deleteAll)
 
 module.exports = router

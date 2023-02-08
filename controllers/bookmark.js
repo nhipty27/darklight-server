@@ -20,12 +20,15 @@ const getBookmark = asyncHandler(async (req, res) => {
 // Add bookmark
 const createBookmark = asyncHandler(async (req, res) => 
 {
-    const {idUser, idMovie, type, image, name} = req.body
+    const tmp = JSON.parse(JSON.stringify(req.body))
+    const {idUser, idMovie, type, image, name} = tmp
+    console.log('add')
+    console.log(idUser);
     
     if( !idUser || !idMovie || !type || !image || !name )
     {
-        res.status(400);
-        throw new Error("Please fill in all fields");
+        res.status(400)
+        throw new Error("Please fill in all fields")
     }
   
     try{
@@ -54,12 +57,12 @@ const deleteBookmark = asyncHandler(async (req, res) =>
     const bookmark = await Bookmark.findOne({idUser, idMovie, type: type})
 
     if (!bookmark) {
-        res.status(404);
-        throw new Error("Bookmark not found");
+        res.status(404)
+        throw new Error("Bookmark not found")
     }
   
     try{
-        await bookmark.remove();
+        await bookmark.remove()
         res.status(200).json({ message: "Product deleted." })
     }
     catch(err) {
