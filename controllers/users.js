@@ -3,7 +3,6 @@ const User = require("../models/User")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 
-// const generateToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1d" })
 
 const generalAccessToken = (data) => {
   const access_token  = jwt.sign({data}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '60m'})
@@ -21,11 +20,11 @@ const registerUser = asyncHandler( async (req, res) => {
 
     // Validation
     if (!name || !email || !password) {
-        res.status(400)
+        res.status(200).json({err: "Please fill in all required fields"})
         throw new Error("Please fill in all required fields")
     }
     if (password.length < 6) {
-        res.status(400)
+        res.status(200).json({err: "Password must be up to 6 characters"})
         throw new Error("Password must be up to 6 characters")
     }
 
@@ -33,7 +32,7 @@ const registerUser = asyncHandler( async (req, res) => {
     const userExists = await User.findOne({ email })
 
     if (userExists) {
-        res.status(400)
+        res.status(200).json({err: "Email has already been registered"})
         throw new Error("Email has already been registered")
     }
     
@@ -54,16 +53,18 @@ const registerUser = asyncHandler( async (req, res) => {
         const { name, avatar } = user
         user.refreshToken = [newRefreshToken]
         await user.save()
-        res.cookie('jwt', newRefreshToken, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000 })
+        res.cookie('jwt', newRefreshToken, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000*10 })
 
         res.status(201).json({
             name,
             avatar,
-            accessToken
+            accessToken,
+            name,
+            email,
         })
     } 
     else {
-        res.status(400)
+        res.status(200).json({err: "Invalid user data"})
         throw new Error("Invalid user data")
     }
 })
@@ -82,10 +83,10 @@ const loginUser = asyncHandler(async (req, res) => {
     const user = await User.findOne({ email })
   
     if (!user) {
-      res.status(400)
+      res.status(200).json({err:"User not found, please signup"})
       throw new Error("User not found, please signup")
     }
-  
+    
     // User exists, check if password is correct
     const passwordIsCorrect = await bcrypt.compare(password, user.password)
 
@@ -120,8 +121,8 @@ const loginUser = asyncHandler(async (req, res) => {
       await user.save()
 
         // Creates Secure Cookie with refresh token
-      res.cookie('jwt', newRefreshToken, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000 })
-
+      res.cookie('jwt', newRefreshToken, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000 *10 })
+      
       res.status(200).json({
         _id,
         name,
@@ -130,7 +131,7 @@ const loginUser = asyncHandler(async (req, res) => {
         accessToken,
       })
     } else {
-      res.status(400)
+      res.status(400).json({err:"Invalid email or password"})
       throw new Error("Invalid email or password")
     }
 })
@@ -192,11 +193,11 @@ const loginUserWithGoogle = asyncHandler(async (req, res) => {
     res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true })
   }
 
-  foundUser.refreshToken = [...newRefreshTokenArray, newRefreshToken]
-  await foundUser.save()
+  user.refreshToken = [...newRefreshTokenArray, newRefreshToken]
+  await user.save()
 
     // Creates Secure Cookie with refresh token
-  res.cookie('jwt', newRefreshToken, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000 })
+  res.cookie('jwt', newRefreshToken, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000*10 })
 
   res.status(200).json({
     _id,
@@ -216,6 +217,14 @@ const loginUserWithGoogle = asyncHandler(async (req, res) => {
   
 // Logout User
 const logout = asyncHandler(async (req, res) => {
+  const cookies = req.cookies
+  
+  const refreshToken = cookies.jwt
+  const user = await User.findOne({ refreshToken }).exec()
+  const newRefreshTokenArray = user.refreshToken.filter(rt => rt !== refreshToken)
+  user.refreshToken = [...newRefreshTokenArray]
+  await user.save()
+
   res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true })
   return res.status(200).json({ message: "Successfully Logged Out" })
 })
@@ -238,12 +247,12 @@ const getUser = asyncHandler(async (req, res) => {
 const handleRefreshToken = async (req, res) => {
     const cookies = req.cookies
     
-    if (!cookies?.jwt) return res.sendStatus(401)
+    if (!cookies?.jwt) return res.status(401)
     const refreshToken = cookies.jwt
     
     res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true })
 
-    const foundUser = await User.findOne({ refreshToken }).exec()
+    const user = await User.findOne({ refreshToken }).exec()
 
     // Detected refresh token reuse!
     if (!foundUser) {
@@ -251,14 +260,14 @@ const handleRefreshToken = async (req, res) => {
             refreshToken,
             process.env.REFRESH_TOKEN_SECRET,
             async (err, decoded) => {
-                if (err) return res.sendStatus(403) //Forbidden
+                if (err) return res.status(403) //Forbidden
                 const hackedUser = await User.findById(decoded.data).exec()
                 
                 hackedUser.refreshToken = []
                 await hackedUser.save()
             }
         )
-        return res.sendStatus(403) //Forbidden
+        return res.status(403) //Forbidden
     }
 
     const newRefreshTokenArray = foundUser.refreshToken.filter(rt => rt !== refreshToken)
@@ -274,7 +283,7 @@ const handleRefreshToken = async (req, res) => {
                 await foundUser.save()
             }
             
-            if (err || foundUser._id.toString() !== decoded.data) return res.sendStatus(403)
+            if (err || foundUser._id.toString() !== decoded.data) return res.status(403)
 
             // Refresh token was still valid
             const accessToken = generalAccessToken(foundUser._id)
@@ -283,7 +292,7 @@ const handleRefreshToken = async (req, res) => {
             // Saving refreshToken with current user
             foundUser.refreshToken = [...newRefreshTokenArray, newRefreshToken]
             await foundUser.save()
-            res.cookie('jwt', newRefreshToken, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000 })
+            res.cookie('jwt', newRefreshToken, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000*10 })
             res.json({ accessToken, refreshToken })
             
         }
@@ -294,12 +303,14 @@ const checkLogin = asyncHandler(async (req, res) => {
   const cookies = req.cookies
   
   if (!cookies?.jwt) 
-    return res.status(200).json({ login: false })
+    {res.status(200).json({ login: false })
+    return}
   const refreshToken = cookies.jwt
   const foundUser = await User.findOne({ refreshToken : refreshToken }).exec()
     
   if(!foundUser)
-    return res.status(200).json({ login: false })
+    {res.status(200).json({ login: false })
+    return}
     
   jwt.verify(
     refreshToken,
@@ -309,10 +320,9 @@ const checkLogin = asyncHandler(async (req, res) => {
       const accessToken = generalAccessToken(foundUser._id)
       
       if (foundUser._id.toString() === decoded.data) 
-        return res.status(200).json({_id, email, name, avatar, accessToken })
+        res.status(200).json({_id, email, name, avatar, accessToken })
     }
   )
-  return res.status(200).json({ login: false })
 })
 
   

@@ -20,10 +20,7 @@ const getBookmark = asyncHandler(async (req, res) => {
 // Add bookmark
 const createBookmark = asyncHandler(async (req, res) => 
 {
-    const tmp = JSON.parse(JSON.stringify(req.body))
-    const {idUser, idMovie, type, image, name} = tmp
-    console.log('add')
-    console.log(idUser);
+    const {idUser, idMovie, type, image, name} = req.body
     
     if( !idUser || !idMovie || !type || !image || !name )
     {

@@ -47,7 +47,6 @@ const createHistory = asyncHandler(async (req, res) =>
                 ep,
                 name,
             })
-            console.log(history);
             
             res.status(201).json(history)
     }
@@ -84,7 +83,6 @@ const deleteHistory = asyncHandler(async (req, res) =>
 const deleteAllHistory = asyncHandler(async (req, res) => 
 {
     const {id, type} = req.body
-    console.log(id);
     
     const history = await History.find({idUser: id})
 
