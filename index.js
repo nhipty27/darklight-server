@@ -41,6 +41,7 @@ app.use("/comment", commentRoutes)
 
 /* MONGOOSE SETUP */
 const PORT = process.env.PORT || 9000
+mongoose.set("strictQuery", false)
 mongoose
   .connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
