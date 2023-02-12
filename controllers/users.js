@@ -255,7 +255,7 @@ const handleRefreshToken = async (req, res) => {
     const user = await User.findOne({ refreshToken }).exec()
 
     // Detected refresh token reuse!
-    if (!foundUser) {
+    if (!user) {
         jwt.verify(
             refreshToken,
             process.env.REFRESH_TOKEN_SECRET,
@@ -270,7 +270,7 @@ const handleRefreshToken = async (req, res) => {
         return res.status(403) //Forbidden
     }
 
-    const newRefreshTokenArray = foundUser.refreshToken.filter(rt => rt !== refreshToken)
+    const newRefreshTokenArray = user.refreshToken.filter(rt => rt !== refreshToken)
     
     // evaluate jwt 
     jwt.verify(
@@ -279,19 +279,19 @@ const handleRefreshToken = async (req, res) => {
         async (err, decoded) => {
 
             if (err) {
-                foundUser.refreshToken = [...newRefreshTokenArray]
-                await foundUser.save()
+                user.refreshToken = [...newRefreshTokenArray]
+                await user.save()
             }
             
-            if (err || foundUser._id.toString() !== decoded.data) return res.status(403)
+            if (err || user._id.toString() !== decoded.data) return res.status(403)
 
             // Refresh token was still valid
-            const accessToken = generalAccessToken(foundUser._id)
-            const newRefreshToken = generalRefreshToken(foundUser._id)
+            const accessToken = generalAccessToken(user._id)
+            const newRefreshToken = generalRefreshToken(user._id)
             
             // Saving refreshToken with current user
-            foundUser.refreshToken = [...newRefreshTokenArray, newRefreshToken]
-            await foundUser.save()
+            user.refreshToken = [...newRefreshTokenArray, newRefreshToken]
+            await user.save()
             res.cookie('jwt', newRefreshToken, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000*10 })
             res.json({ accessToken, refreshToken })
             
