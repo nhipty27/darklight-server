@@ -1,11 +1,11 @@
-﻿# [WEB] DARKLIGHT SERVER
+﻿# [SERVER] DARKLIGHT SERVER
 
 ## 🛠 Introduction
 
-Here is my source code for website. With my code: 
+Here is my source code for server. With my code: 
 * **Built on the Model-View-Controller (MVC) pattern.**
 * **Building User Authentication System Using JWT.**
-* **Building a user authentication system using JWT and using the expiration mechanism of User Refresh Token.**
+* **Using the expiration mechanism of User Refresh Token.**
 * **Real-time integration to implement user's comment function.**
 * **Data about users, bookmarks, history are stored in mongoDB.**
 
